@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movies API Tester</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0c0c12;
+      color: #e2e2e2;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      color: #a78bfa;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Layout sections ── */
+    .section {
+      max-width: 1200px;
+      margin: 0 auto 3rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #2e2e3e;
+    }
+
+    .section-header h2 {
+      font-size: 1rem;
+      color: #c4b5fd;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .get    { background: #1d4ed8; color: #bfdbfe; }
+    .post   { background: #15803d; color: #bbf7d0; }
+    .patch  { background: #b45309; color: #fde68a; }
+    .delete { background: #991b1b; color: #fecaca; }
+
+    button.btn-delete { background: #b91c1c; }
+    button.btn-delete:hover { background: #991b1b; }
+
+    /* ── Controls row ── */
+    .controls {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    input, textarea {
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 8px;
+      color: #e2e2e2;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input { flex: 1; min-width: 180px; }
+    input:focus, textarea:focus { border-color: #7c3aed; }
+
+    textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 120px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      margin-bottom: 0.75rem;
+    }
+
+    button {
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.3rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    button:hover { background: #6d28d9; }
+
+    /* ── Status pill ── */
+    .status-pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+    .status-ok  { background: #14532d; color: #86efac; }
+    .status-err { background: #7f1d1d; color: #fca5a5; }
+
+    /* ── Movie grid (GET /movies) ── */
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 1rem;
+    }
+
+    .movie-card {
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .movie-card:hover { transform: translateY(-3px); border-color: #7c3aed; }
+
+    .movie-card img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      background: #0f0f13;
+    }
+
+    .movie-card-info {
+      padding: 0.6rem 0.7rem;
+    }
+    .movie-card-info .title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #e2e2e2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .movie-card-info .meta {
+      font-size: 0.72rem;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .movie-card-info .genres {
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+    .genre-tag {
+      font-size: 0.62rem;
+      background: #2e2e3e;
+      color: #a78bfa;
+      border-radius: 999px;
+      padding: 1px 7px;
+    }
+    .movie-card-info .id-text {
+      font-size: 0.6rem;
+      color: #4b5563;
+      margin-top: 5px;
+      font-family: monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Single movie detail (GET /movies/:id) ── */
+    .movie-detail {
+      display: flex;
+      gap: 1.5rem;
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 12px;
+      padding: 1.2rem;
+      align-items: flex-start;
+    }
+    .movie-detail img {
+      width: 140px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #0f0f13;
+    }
+    .movie-detail-info { flex: 1; }
+    .movie-detail-info h3 { font-size: 1.3rem; color: #c4b5fd; margin-bottom: 0.4rem; }
+    .movie-detail-info .detail-row {
+      font-size: 0.83rem;
+      color: #9ca3af;
+      margin: 3px 0;
+    }
+    .movie-detail-info .detail-row span { color: #e2e2e2; }
+    .detail-genres { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
+    /* ── POST/PATCH response ── */
+    .msg-box {
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-size: 0.88rem;
+    }
+    .msg-box.ok   { border-color: #15803d; color: #86efac; }
+    .msg-box.err  { border-color: #b91c1c; color: #f87171; }
+
+    /* ── Empty / loading states ── */
+    .placeholder {
+      color: #4b5563;
+      font-size: 0.82rem;
+      padding: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎬 Movies API Tester</h1>
+
+<!-- ══════════════ GET /movies ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge get">GET</span>
+    <h2>/movies</h2>
+  </div>
+  <div class="controls">
+    <input id="genre-filter" placeholder="Filtrar por género: Action, Drama…" />
+    <button onclick="getMovies()">Buscar</button>
+  </div>
+  <div id="res-get-movies"><p class="placeholder">Haz clic en Buscar para ver las películas.</p></div>
+</div>
+
+<!-- ══════════════ GET /movies/:id ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge get">GET</span>
+    <h2>/movies/:id</h2>
+  </div>
+  <div class="controls">
+    <input id="get-id" placeholder="ID de la película…" />
+    <button onclick="getMovieById()">Buscar por ID</button>
+  </div>
+  <div id="res-get-id"><p class="placeholder">Ingresa un ID y haz clic en Buscar.</p></div>
+</div>
+
+<!-- ══════════════ POST /movies ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge post">POST</span>
+    <h2>/movies — Crear película</h2>
+  </div>
+  <textarea id="post-body">{
+  "title": "Inception",
+  "year": 2010,
+  "director": "Christopher Nolan",
+  "duration": 148,
+  "poster": "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+  "genre": ["Action", "Science Fiction", "Adventure"],
+  "rate": 8.8
+}</textarea>
+  <button onclick="postMovie()">Crear película</button>
+  <div id="res-post" style="margin-top:0.75rem"><p class="placeholder">La respuesta aparecerá aquí.</p></div>
+</div>
+
+<!-- ══════════════ DELETE /movies/:id ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge delete">DELETE</span>
+    <h2>/movies/:id — Eliminar película</h2>
+  </div>
+  <div class="controls">
+    <input id="delete-id" placeholder="ID de la película a eliminar…" />
+    <button class="btn-delete" onclick="deleteMovie()">Eliminar</button>
+  </div>
+  <div id="res-delete"><p class="placeholder">La respuesta aparecerá aquí.</p></div>
+</div>
+
+<!-- ══════════════ PATCH /movies/:id ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge patch">PATCH</span>
+    <h2>/movies/:id — Actualizar película</h2>
+  </div>
+  <div class="controls" style="margin-bottom:0.75rem">
+    <input id="patch-id" placeholder="ID de la película a actualizar…" />
+  </div>
+  <textarea id="patch-body">{
+  "rate": 9.5
+}</textarea>
+  <button onclick="patchMovie()">Actualizar</button>
+  <div id="res-patch" style="margin-top:0.75rem"><p class="placeholder">La respuesta aparecerá aquí.</p></div>
+</div>
+
+<script>
+  const BASE = 'http://localhost:1234'
+
+  // ── helpers ──────────────────────────────────────────────
+  async function apiFetch(method, url, body) {
+    const options = { method, headers: { 'Content-Type': 'application/json' } }
+    if (body) options.body = JSON.stringify(JSON.parse(body))
+    const res = await fetch(BASE + url, options)
+    const data = await res.json()
+    return { ok: res.ok, status: res.status, data }
+  }
+
+  function pill(status, ok) {
+    return `<span class="status-pill ${ok ? 'status-ok' : 'status-err'}">${status}</span>`
+  }
+
+  function movieCardHTML(m) {
+    const genres = (m.genre || []).map(g => `<span class="genre-tag">${g}</span>`).join('')
+    return `
+      <div class="movie-card" onclick="fillId('${m.id}')">
+        <img src="${m.poster || ''}" alt="${m.title}" loading="lazy"
+             onerror="this.src='https://placehold.co/170x255/1a1a24/6b7280?text=No+img'"/>
+        <div class="movie-card-info">
+          <div class="title">${m.title}</div>
+          <div class="meta">${m.year} · ⭐ ${m.rate ?? '—'} · ${m.duration ?? '—'} min</div>
+          <div class="genres">${genres}</div>
+          <div class="id-text">${m.id}</div>
+        </div>
+      </div>`
+  }
+
+  function movieDetailHTML(m) {
+    const genres = (m.genre || []).map(g => `<span class="genre-tag">${g}</span>`).join('')
+    return `
+      <div class="movie-detail">
+        <img src="${m.poster || ''}" alt="${m.title}"
+             onerror="this.src='https://placehold.co/140x210/1a1a24/6b7280?text=No+img'"/>
+        <div class="movie-detail-info">
+          <h3>${m.title}</h3>
+          <div class="detail-row">Director: <span>${m.director ?? '—'}</span></div>
+          <div class="detail-row">Año: <span>${m.year ?? '—'}</span></div>
+          <div class="detail-row">Duración: <span>${m.duration ?? '—'} min</span></div>
+          <div class="detail-row">Rating: <span>⭐ ${m.rate ?? '—'}</span></div>
+          <div class="detail-row">ID: <span style="font-family:monospace;font-size:0.75rem">${m.id}</span></div>
+          <div class="detail-genres">${genres}</div>
+        </div>
+      </div>`
+  }
+
+  // Copia el id al input de GET/:id y PATCH al hacer clic en una card
+  function fillId(id) {
+    document.getElementById('get-id').value = id
+    document.getElementById('delete-id').value = id
+    document.getElementById('patch-id').value = id
+    getMovieById()
+    document.getElementById('res-get-id').scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // ── GET /movies ───────────────────────────────────────────
+  async function getMovies() {
+    const genre = document.getElementById('genre-filter').value.trim()
+    const url = genre ? `/movies?genre=${encodeURIComponent(genre)}` : '/movies'
+    const el = document.getElementById('res-get-movies')
+    el.innerHTML = '<p class="placeholder">Cargando…</p>'
+    try {
+      const { ok, status, data } = await apiFetch('GET', url)
+      if (!ok || !Array.isArray(data)) {
+        el.innerHTML = pill(status, false) + `<div class="msg-box err">${JSON.stringify(data, null, 2)}</div>`
+        return
+      }
+      if (data.length === 0) {
+        el.innerHTML = pill(status, true) + '<p class="placeholder">No se encontraron películas.</p>'
+        return
+      }
+      el.innerHTML = pill(status, true) +
+        `<p style="font-size:0.78rem;color:#6b7280;margin-bottom:0.75rem">${data.length} película(s) — haz clic en una para ver el detalle</p>` +
+        `<div class="movies-grid">${data.map(movieCardHTML).join('')}</div>`
+    } catch (err) {
+      el.innerHTML = `<div class="msg-box err">Error: ${err.message}</div>`
+    }
+  }
+
+  // ── GET /movies/:id ───────────────────────────────────────
+  async function getMovieById() {
+    const id = document.getElementById('get-id').value.trim()
+    const el = document.getElementById('res-get-id')
+    if (!id) { el.innerHTML = '<div class="msg-box err">Ingresa un ID.</div>'; return }
+    el.innerHTML = '<p class="placeholder">Cargando…</p>'
+    try {
+      const { ok, status, data } = await apiFetch('GET', `/movies/${id}`)
+      if (!ok) {
+        el.innerHTML = pill(status, false) + `<div class="msg-box err">${data.message ?? JSON.stringify(data)}</div>`
+        return
+      }
+      el.innerHTML = pill(status, true) + movieDetailHTML(data)
+    } catch (err) {
+      el.innerHTML = `<div class="msg-box err">Error: ${err.message}</div>`
+    }
+  }
+
+  // ── POST /movies ──────────────────────────────────────────
+  async function postMovie() {
+    const el = document.getElementById('res-post')
+    try {
+      const { ok, status, data } = await apiFetch('POST', '/movies', document.getElementById('post-body').value)
+      el.innerHTML = pill(status, ok) +
+        `<div class="msg-box ${ok ? 'ok' : 'err'}">${data.message ?? JSON.stringify(data, null, 2)}</div>`
+    } catch (err) {
+      el.innerHTML = `<div class="msg-box err">Error: ${err.message}</div>`
+    }
+  }
+
+  // ── DELETE /movies/:id ───────────────────────────────────
+  async function deleteMovie() {
+    const id = document.getElementById('delete-id').value.trim()
+    const el = document.getElementById('res-delete')
+    if (!id) { el.innerHTML = '<div class="msg-box err">Ingresa un ID.</div>'; return }
+    try {
+      const { ok, status, data } = await apiFetch('DELETE', `/movies/${id}`)
+      el.innerHTML = pill(status, ok) +
+        `<div class="msg-box ${ok ? 'ok' : 'err'}">${data.message ?? JSON.stringify(data, null, 2)}</div>`
+    } catch (err) {
+      el.innerHTML = `<div class="msg-box err">Error: ${err.message}</div>`
+    }
+  }
+
+  // ── PATCH /movies/:id ─────────────────────────────────────
+  async function patchMovie() {
+    const id = document.getElementById('patch-id').value.trim()
+    const el = document.getElementById('res-patch')
+    if (!id) { el.innerHTML = '<div class="msg-box err">Ingresa un ID.</div>'; return }
+    try {
+      const { ok, status, data } = await apiFetch('PATCH', `/movies/${id}`, document.getElementById('patch-body').value)
+      el.innerHTML = pill(status, ok) +
+        `<div class="msg-box ${ok ? 'ok' : 'err'}">${data.message ?? JSON.stringify(data, null, 2)}</div>`
+    } catch (err) {
+      el.innerHTML = `<div class="msg-box err">Error: ${err.message}</div>`
+    }
+  }
+</script>
+
+</body>
+</html>

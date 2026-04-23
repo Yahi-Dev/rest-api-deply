@@ -1,0 +1,38 @@
+### Recuperar todas las peliculas
+GET http://localhost:1234/movies
+
+
+### Recuperar una pelicula por id
+GET http://localhost:1234/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
+
+
+### Recuperar todas las peliculas por un género
+GET http://localhost:1234/movies?genre=action
+
+
+### Crear una pelicula
+POST http://localhost:1234/movies
+Content-Type: application/json
+
+{
+    "title": "The Dark Knight",
+    "director": "Christopher Nolan",
+    "year": 2008,
+    "genre": ["Action"]
+}
+
+
+### Actualizar una pelicula
+PATCH  http://localhost:1234/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
+Content-Type: application/json
+
+{
+    "title": "The Dark Knight Rises",
+    "director": "Christopher Nolan",
+    "year": 2012,
+    "genre": ["Action"]
+}
+
+
+### Eliminar una pelicula
+DELETE http://localhost:1234/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
