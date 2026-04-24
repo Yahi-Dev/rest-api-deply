@@ -1,9 +1,9 @@
 import express, { json } from 'express'
-import movies from './movies.json'
+import movies from './movies.json' with { type: 'json' }
 import { randomUUID } from 'node:crypto'
 import { title } from 'node:process'
 import z from 'zod'
-import { movieSchema, validateMovie, validatePartialMovie } from './schemas/movies'
+import { movieSchema, validateMovie, validatePartialMovie } from './schemas/movies.js'
 
 const app = express()
 

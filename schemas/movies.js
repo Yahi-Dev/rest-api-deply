@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
-const movieSchema = z.object({
-    title: z.string(
-        invalid_type_error='title must be a string',
-        required_error='title is required'
-    ),
+export const movieSchema = z.object({
+    title: z.string({
+        invalid_type_error: 'title must be a string',
+        required_error: 'title is required'
+    }),
 
     genre: z.array(z.enum(['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance'], {
         invalid_type_error: 'genre must be an array of strings',
