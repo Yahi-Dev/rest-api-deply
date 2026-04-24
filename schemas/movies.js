@@ -1,4 +1,4 @@
-const { z } = require('zod')
+import { z } from 'zod'
 
 const movieSchema = z.object({
     title: z.string(
@@ -26,7 +26,7 @@ const movieSchema = z.object({
     poster: z.string().url('poster must be a valid URL').optional()
 })
 
-function validateMovie(movie) {
+export function validateMovie(movie) {
     try {
        return movieSchema.safeParse(movie)
     } catch (error) {
@@ -34,17 +34,11 @@ function validateMovie(movie) {
     }
 }
 
-function validatePartialMovie(params) {
+export function validatePartialMovie(params) {
     const partialSchema = movieSchema.partial()
     try {
         return partialSchema.safeParse(params)
     } catch (error) {
         return { valid: false, errors: error.errors }
     }
-}
-
-module.exports = {
-    movieSchema,
-    validateMovie,
-    validatePartialMovie
 }

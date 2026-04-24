@@ -1,16 +1,16 @@
-const express = require('express')
-const movies = require('./movies.json')
-const crypto = require('node:crypto')
-const { title } = require('node:process')
-const z = require('zod')
-const { movieSchema, validateMovie, validatePartialMovie } = require('./schemas/movies')
+import express, { json } from 'express'
+import movies from './movies.json'
+import { randomUUID } from 'node:crypto'
+import { title } from 'node:process'
+import z from 'zod'
+import { movieSchema, validateMovie, validatePartialMovie } from './schemas/movies'
 
 const app = express()
 
 const ACEPTED_ORIGINS = ['http://127.0.0.1:5501']
 
 app.disable('x-powered-by')
-app.use(express.json())
+app.use(json())
 app.use((req, res, next) => {
     const origin = req.headers.origin
     if (ACEPTED_ORIGINS.includes(origin)) {
@@ -60,7 +60,7 @@ app.post('/movies', (req, res) => {
     }
 
     const newMovie = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         ...movie.data
     }
     
