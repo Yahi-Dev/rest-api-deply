@@ -17,7 +17,7 @@ export const movieSchema = z.object({
 
     director: z.string().optional(),
 
-    duration: z.number().int().positive('duration must be a positive integer').optional(),
+    duration: z.number().int().positive('duration must be a positive integer'),
 
     rate: z.number()
     .min(0, 'rate must be greater than or equal to 0')

@@ -150,11 +150,23 @@ export class MovieModel {
   static async deleteMovie({ id }) {
     const connection = await pool.getConnection();
     try {
+      await connection.beginTransaction();
+
+      await connection.query(
+        'DELETE FROM movie_genres WHERE movie_id = UUID_TO_BIN(?)',
+        [id]
+      );
+
       const [result] = await connection.query(
         'DELETE FROM movie WHERE id = UUID_TO_BIN(?)',
         [id]
       );
+
+      await connection.commit();
       return result.affectedRows > 0;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
     } finally {
       connection.release();
     }
@@ -163,11 +175,22 @@ export class MovieModel {
   static async updateMovie({ id, input }) {
     const connection = await pool.getConnection();
     try {
+      await connection.beginTransaction();
+
+      const [existing] = await connection.query(
+        'SELECT id FROM movie WHERE id = UUID_TO_BIN(?)',
+        [id]
+      );
+      if (existing.length === 0) {
+        await connection.rollback();
+        return false;
+      }
+
       const { title, year, director, duration, poster, rate, genre } = input;
-      
+
       const updates = [];
       const values = [];
-      
+
       if (title !== undefined) {
         updates.push('title = ?');
         values.push(title);
@@ -192,7 +215,7 @@ export class MovieModel {
         updates.push('rate = ?');
         values.push(rate);
       }
-      
+
       if (updates.length > 0) {
         values.push(id);
         await connection.query(
@@ -200,19 +223,19 @@ export class MovieModel {
           values
         );
       }
-      
+
       if (genre && genre.length > 0) {
         await connection.query(
           'DELETE FROM movie_genres WHERE movie_id = UUID_TO_BIN(?)',
           [id]
         );
-        
+
         for (const genreName of genre) {
           const [genreRows] = await connection.query(
             'SELECT id FROM genre WHERE name = ?',
             [genreName]
           );
-          
+
           if (genreRows.length > 0) {
             await connection.query(
               'INSERT INTO movie_genres (movie_id, genre_id) VALUES (UUID_TO_BIN(?), ?)',
@@ -221,9 +244,11 @@ export class MovieModel {
           }
         }
       }
-      
+
+      await connection.commit();
       return true;
     } catch (error) {
+      await connection.rollback();
       console.error('Database error in updateMovie:', error);
       throw error;
     } finally {

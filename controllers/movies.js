@@ -1,12 +1,16 @@
 // En controllers/movies.js
-import { MovieModel } from "../models/mysql/movie.js";
 import { validateMovie, validatePartialMovie } from "../schemas/movies.js";
 
 export class MovieController {
-  static async getAllMovies(req, res) {
+
+  constructor({movieModel}) {
+    this.movieModel = movieModel;
+  }
+
+   getAllMovies = async (req, res) => {
     try {
       const { genre } = req.query;
-      const movies = await MovieModel.getAllMovies({ genre });
+      const movies = await this.movieModel.getAllMovies({ genre });
       res.json(movies);
     } catch (error) {
       console.error("Error in getAllMovies:", error); // 👈 Añade logging
@@ -14,11 +18,11 @@ export class MovieController {
     }
   }
 
-  static async getMovieById(req, res) {
+   getMovieById = async (req, res) => {
     try {
       const { id } = req.params;
       // 👇 IMPORTANTE: Pasar como objeto { id }
-      const movie = await MovieModel.getMovieById({ id });
+      const movie = await this.movieModel.getMovieById({ id });
       if (!movie) {
         return res.status(404).json({ message: "movie not found" });
       }
@@ -29,7 +33,7 @@ export class MovieController {
     }
   }
 
-  static async createMovie(req, res) {
+   createMovie = async (req, res) => {
     try {
       const result = validateMovie(req.body); // 👈 Cambia 'movie' a 'result'
 
@@ -41,7 +45,7 @@ export class MovieController {
       }
 
       // 👇 Pasar como { input: result.data }
-      const newMovie = await MovieModel.createMovie({ input: result.data });
+      const newMovie = await this.movieModel.createMovie({ input: result.data });
 
       if (newMovie) {
         res.status(201).json(newMovie); // 👈 Devuelve la película creada
@@ -54,7 +58,7 @@ export class MovieController {
     }
   }
 
-  static async updateMovie(req, res) {
+   updateMovie = async (req, res) => {
     try {
       const { id } = req.params;
       const result = validatePartialMovie(req.body);
@@ -67,7 +71,7 @@ export class MovieController {
       }
 
       // 👇 Pasar como { id, input: result.data }
-      const updatedMovie = await MovieModel.updateMovie({
+      const updatedMovie = await this.movieModel.updateMovie({
         id,
         input: result.data,
       });
@@ -83,11 +87,11 @@ export class MovieController {
     }
   }
 
-  static async deleteMovie(req, res) {
+   deleteMovie = async (req, res) => {
     try {
       const { id } = req.params;
       // 👇 Pasar como { id }
-      const deletedMovie = await MovieModel.deleteMovie({ id });
+      const deletedMovie = await this.movieModel.deleteMovie({ id });
 
       if (!deletedMovie) {
         return res.status(404).json({ message: "movie not found" });
@@ -99,4 +103,5 @@ export class MovieController {
       res.status(500).json({ message: "error deleting movie" });
     }
   }
+
 }
