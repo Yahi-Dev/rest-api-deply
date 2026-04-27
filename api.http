@@ -2,19 +2,19 @@
 ### API Local http://localhost:1234/
 
 ### Recuperar todas las peliculas
-GET https://rest-api-deply.vercel.app/movies
+GET http://localhost:1234/movies
 
 
 ### Recuperar una pelicula por id
-GET https://rest-api-deply.vercel.app/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
+GET http://localhost:1234/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
 
 
 ### Recuperar todas las peliculas por un género
-GET https://rest-api-deply.vercel.app/movies?genre=action
+GET http://localhost:1234/movies?genre=action
 
 
 ### Crear una pelicula
-POST https://rest-api-deply.vercel.app/movies
+POST http://localhost:1234/movies
 Content-Type: application/json
 
 {
@@ -26,7 +26,7 @@ Content-Type: application/json
 
 
 ### Actualizar una pelicula
-PATCH  https://rest-api-deply.vercel.app/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
+PATCH  http://localhost:1234/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
 Content-Type: application/json
 
 {
@@ -38,4 +38,4 @@ Content-Type: application/json
 
 
 ### Eliminar una pelicula
-DELETE https://rest-api-deply.vercel.app/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
+DELETE http://localhost:1234/movies/ccf36f2e-8566-47f7-912d-9f4647250bc7
